@@ -1,28 +1,44 @@
 import numpy as np
 
+
 def score_game(game_core):
     '''Запускаем игру 1000 раз, чтобы узнать, как быстро игра угадывает число'''
     count_ls = []
     np.random.seed(1)  # фиксируем RANDOM SEED, чтобы ваш эксперимент был воспроизводим!
-    random_array = np.random.randint(1,101, size=(1000))
+    random_array = np.random.randint(1, 101, size=(1000))
     for number in random_array:
         count_ls.append(game_core(number))
     score = int(np.mean(count_ls))
-    print(f"Ваш алгоритм угадывает число в среднем за {score} попыток")
-    return(score)
+    print(f"Ваш алгоритм угадывает число в среднем за {score} попыток", count_ls)
+    return (score)
 
-def game_core_v2(number):
-    '''Сначала устанавливаем любое random число, а потом уменьшаем или увеличиваем его в зависимости от того, больше оно или меньше нужного.
-       Функция принимает загаданное число и возвращает число попыток'''
+
+def game_core_my(number):
+    '''Для увеличения скорости сходимости будем идти к искомому числу с шагом половины разницы между этими числами'''
     count = 1
-    number = np.random.randint(1, 101)
-    predict = np.random.randint(1,101)
-    while number != predict:
-        count+=1
-        if number > predict: 
-            predict += 1
-        elif number < predict: 
-            predict -= 1
-    return(count) # выход из цикла, если угадали
+    predict = 50  # берем среднее чесло между 1 и 100
 
-score_game(game_core_v2)
+    while number != predict:
+        count += 1
+        if number > predict:  # проверка, если наше число больше, чем угадываемое,
+            predict += int(
+                (number - predict) / 2)  # то увеличиваем наше число на среднее значение между искомым и нашим числом
+            if number - predict == 1:  # когда мы подошли уже на единицу к искомому числу, то чтобы избежать зацикливания (int от 1/2 всегда 0)
+                if count >= 3:  # проверка на "длительность" поиска (если изначально искомое число отличается от нашего меньше, чем на 2)
+                    return (count + 1)  # выходим из цикла
+                else:
+                    return (
+                        count)  # если загаданное число отличается от нашего на единицу - мы всегда угадываем его за 2 попытки
+        elif number < predict:  # проверка, если наше число больше, чем угадываемое,
+            predict -= int(
+                (predict - number) / 2)  # то уменьшаем наше число на среднее значение между искомым и нашим числом
+            if predict - number == 1:  # когда мы подошли уже на единицу к искомому числу, то чтобы избежать зацикливания (int от 1/2 всегда 0)
+                if count >= 3:
+                    return (count + 1)  # выходим из цикла
+                else:
+                    return (
+                        count)  # если загаданное число отличается от нашего на единицу - мы всегда угадываем его за 2 попытки
+    return (count)  # выход из цикла, если угадали
+
+
+score_game(game_core_my)
